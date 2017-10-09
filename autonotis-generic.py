@@ -1,25 +1,15 @@
-import pandas as pd
-from bs4 import BeautifulSoup
 import bs4 as bs
-import datetime as dt
-import os
-import pandas_datareader.data as web
 import pickle
-import requests
-import lxml
-import csv
 import requests
 import time
 import smtplib
 urllist = []
 tickerlist = []
 
-
-
 #Download Tickers Oslo Bors
 def bors():
     try:
-        resp = requests.get('http://www.netfonds.no/quotes/kurs.php')   ## ACTIVATE THIS FOR OSLO BĂRS                         ## 1
+        resp = requests.get('http://www.netfonds.no/quotes/kurs.php')
         soup = bs.BeautifulSoup(resp.text, 'lxml')
         table = soup.find('table', {'class':'mbox'})
         tickers = []
@@ -30,7 +20,6 @@ def bors():
             pickle.dump(tickers,f)
     except:
         pass
-    
 
 #Download Tickers Oslo Axess
 def axess():
@@ -47,8 +36,7 @@ def axess():
     except:
         pass
 
-
-#Create URL's for relevant tickers
+#Generate URL's for relevant tickers
 def URL_finder_OSE(ticker):
     url1 = "http://www.netfonds.no/quotes/releases.php?paper="
     url2 = "&days=&location=paper&exchange=OSE"
@@ -60,28 +48,24 @@ def URL_finder_OAX(ticker):
     url_combined = url1+ticker+url2
     urllist.append(url_combined)
 
-
 #Set up watchlist
 def choose_tickers():
-    print("What ticker would you like to monitor?")
+    print("\nWhat ticker would you like to monitor?".encode('utf-8'))
     df_OSE = pickle.load(open("ose.pickle","rb"))
     df_Axess = pickle.load(open("axess.pickle","rb"))
     y = 2
     while y == 2:
-        ticker_add = input("Ticker:")
+        ticker_add = input("\nTicker: ")
         ticker_add = ticker_add.upper()
         if ticker_add == "START":
             break
-        ticker_exch = input("Please specify 'OAX' or 'OSE' for whether the security is traded on Oslo Axcess or Oslo Børs")
+        ticker_exch = input("Please specify 'OAX' or 'OSE' for whether the security is traded on Oslo Axcess or Oslo Børs\n\nExchange: ")
         ticker_exch = ticker_exch.upper()
-        
-        
         if ticker_exch == "OSE":
             for i in df_OSE:
                 if i == ticker_add:
                     tickerlist.append(i)
                     URL_finder_OSE(i)
-
         else:
             if ticker_exch == "OAX":
                 for i in df_Axess:
@@ -89,22 +73,10 @@ def choose_tickers():
                         tickerlist.append(i)
                         URL_finder_OAX(i)
             else:
-                print("""
-                
-                Input not recognized. Please try again.
-                
-                """)
-        print("""Your current selection of tickers consists of
-        """)
-        print(tickerlist)
-        print("""
-        If you wish to enter more tickers, please do so; otherwise type 'start'""")
+                print("\nInput not recognized. Please try again.\n".encode('utf-8'))
+        print("Your current selection of tickers consists of\n\n{}\n\nIf you wish to enter more tickers, please do so; otherwise type 'start'".format(tickerlist).encode('utf-8'))
 
-
-
-
-
-#Save news to long-variable
+#Save news to long-cycle variable
 def nyhet_lang():
     yx = []
     for varname in urllist:
@@ -117,8 +89,7 @@ def nyhet_lang():
         with open("nyhet.pickle","wb") as f:
             pickle.dump(yx,f)
 
-
-#Save news to Short-variable
+#Save news to Short- cyclevariable
 def nyhet_kort():
     yz = []
     for varname in urllist:
@@ -138,9 +109,7 @@ def email(ticker):
     msg = df[ticker]
     #Transform to list
     msg = list(msg)
-    msg2 = """Nyheter fra oslobors!
-    
-    """
+    msg2 = "Nyheter fra oslobors!\n\n"
     #Remove Norwegian letters from text, and recombine to string
     charlist = ['é','í','û','ü','ö','ë','í','é','á','ú','ï']
     for i in msg: 
@@ -167,34 +136,24 @@ def email(ticker):
     print("MAIL SENT")
     server.quit()
 
-
-
 def main():
-    
-    tid = 0
+    tid = time.time()
+    #Download Tickers from OSE (Exchange)  
     bors()
+    #Download Tickers from OAX (Exchange)
     axess()
+    #Get tickerlist
     choose_tickers()
+    #Store current news in pickle
     nyhet_lang()
-    
-    
-    ####################################
+    #Retrieve current news
     df_init = pickle.load(open("nyhet.pickle","rb"))
-    print("""
-    
-    
-    
-    CURRENT NEWS:
-        """)
+    #Print current news
+    print("\n\n\n\n\nCURRENT NEWS: \n")
     for i in df_init:
-        print(i)
-    print("""
-    
-    """)
+        print("{}\n\n".format(i))
     print(tickerlist)
-    ########################################
-    
-    
+    #Monitoring for new news
     while True:
         nyhet_kort()
         df1 = pickle.load(open("nyhet.pickle","rb"))        
@@ -203,26 +162,19 @@ def main():
         for i in df1:
             shortlist.append(i)
             shortcounter+=1
-        ############################################
         df2 = pickle.load(open("nyhet2.pickle","rb"))    
         longlist = []
         for i in df2:
             longlist.append(i)
-
-        
-
         if df1 != df2:
             for i in range(0,shortcounter):
                 if shortlist[i] != longlist[i]:
                     email(i)
             nyhet_lang()
             time.sleep(60)
-    
         else:
-            tid+=1
-            print("Runtime: %i minute." % tid)
+            print("\nRuntime: {} minute(s)".format(round((time.time()-tid)/60)))
             time.sleep(60)
             
-
-main()
-
+if __name__ == '__main__':
+    main()
