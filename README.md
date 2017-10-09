@@ -2,10 +2,10 @@
 Lets you monitor a selection of Norwegian stocks for news. News events are emailed to the user.
 
 Requirements:
-- bs4 (BeautifulSoup)       #For data
+- bs4 (BeautifulSoup)
 - pickle                    
 - pandas
-- smtplib                   #For email functionality
+- smtplib
 
 Oslo Bors provides this exact service by SMS (https://www.oslobors.no/Oslo-Boers/Produkter-og-tjenester/SMS-tjenester/Varslinger-paa-SMS), but if you prefer not to pay for the service, here is a simple way to get more or less the same functionality.
 
