@@ -9,7 +9,7 @@ tickerlist = []
 #Download Tickers Oslo Bors
 def bors():
     try:
-        resp = requests.get('http://www.netfonds.no/quotes/kurs.php')
+        resp = requests.get('http://www.netfonds.no/quotes/kurs.php')   ## ACTIVATE THIS FOR OSLO BĂRS                         ## 1
         soup = bs.BeautifulSoup(resp.text, 'lxml')
         table = soup.find('table', {'class':'mbox'})
         tickers = []
@@ -50,16 +50,17 @@ def URL_finder_OAX(ticker):
 
 #Set up watchlist
 def choose_tickers():
-    print("\nWhat ticker would you like to monitor?".encode('utf-8'))
+    print("What ticker would you like to monitor?".encode('utf-8'))
     df_OSE = pickle.load(open("ose.pickle","rb"))
     df_Axess = pickle.load(open("axess.pickle","rb"))
     y = 2
     while y == 2:
-        ticker_add = input("\nTicker: ")
+        ticker_add = input("Ticker: ")
         ticker_add = ticker_add.upper()
         if ticker_add == "START":
             break
-        ticker_exch = input("Please specify 'OAX' or 'OSE' for whether the security is traded on Oslo Axcess or Oslo Børs\n\nExchange: ")
+        print("Please specify 'OAX' or 'OSE' for whether the security is traded on Oslo Axcess or Oslo Bors.".encode('utf-8'))
+        ticker_exch = input("Exchange: ".encode('utf-8'))
         ticker_exch = ticker_exch.upper()
         if ticker_exch == "OSE":
             for i in df_OSE:
@@ -73,8 +74,8 @@ def choose_tickers():
                         tickerlist.append(i)
                         URL_finder_OAX(i)
             else:
-                print("\nInput not recognized. Please try again.\n".encode('utf-8'))
-        print("Your current selection of tickers consists of\n\n{}\n\nIf you wish to enter more tickers, please do so; otherwise type 'start'".format(tickerlist).encode('utf-8'))
+                print("Input not recognized. Please try again.".encode('utf-8'))
+        print("Your current selection of tickers consists of{}If you wish to enter more tickers, please do so; otherwise type 'start'".format(tickerlist).encode('utf-8'))
 
 #Save news to long-cycle variable
 def nyhet_lang():
@@ -109,7 +110,7 @@ def email(ticker):
     msg = df[ticker]
     #Transform to list
     msg = list(msg)
-    msg2 = "Nyheter fra oslobors!\n\n"
+    msg2 = "Nyheter fra oslobors!"
     #Remove Norwegian letters from text, and recombine to string
     charlist = ['é','í','û','ü','ö','ë','í','é','á','ú','ï']
     for i in msg: 
@@ -149,9 +150,9 @@ def main():
     #Retrieve current news
     df_init = pickle.load(open("nyhet.pickle","rb"))
     #Print current news
-    print("\n\n\n\n\nCURRENT NEWS: \n")
+    print("CURRENT NEWS: ")
     for i in df_init:
-        print("{}\n\n".format(i))
+        print("Watchlist: {}".format(i).encode('utf-8'))
     print(tickerlist)
     #Monitoring for new news
     while True:
@@ -173,7 +174,7 @@ def main():
             nyhet_lang()
             time.sleep(60)
         else:
-            print("\nRuntime: {} minute(s)".format(round((time.time()-tid)/60)))
+            print("Runtime: {} minute(s)".format(round((time.time()-tid)/60)))
             time.sleep(60)
             
 if __name__ == '__main__':
