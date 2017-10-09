@@ -9,11 +9,11 @@ Requirements:
 
 Oslo Bors provides this exact service by SMS (https://www.oslobors.no/Oslo-Boers/Produkter-og-tjenester/SMS-tjenester/Varslinger-paa-SMS), but if you prefer not to pay for the service, here is a simple way to get more or less the same functionality.
 
-You do need to enter your e-mail details in lines ~165-166.
+For e-mail functionality enter account details in lines ~165-166.
 
 
 ------------------
 
-This script is configured to ask you which stocks you're interested in monitoring at launch, but pre-defining your watchlist is easily done. I run this on my raspberry pi, and find that pre-configuring the watchlist is more convenient to let it run on startup.
+This script is configured to prompt you for stocks you're interested in monitoring, but hard-coding your watchlist is simple. I run this on my raspberry pi, and find that hard-coding the watchlist is more convenient.
 
-The script refreshes every 60 seconds to check for news. The frequency can be shortened or lengthened by changing the pause at the very end of the script.
+The script refreshes every 60 seconds to check for news. The frequency can be changed at the very end of the script.
