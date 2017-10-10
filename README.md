@@ -7,7 +7,7 @@ Requirements:
 
 Oslo Bors provides this exact service by SMS (https://www.oslobors.no/Oslo-Boers/Produkter-og-tjenester/SMS-tjenester/Varslinger-paa-SMS), but if you prefer not to pay for the service, here is a simple way to get more or less the same functionality.
 
-For e-mail functionality enter account details in lines ~165-166.
+For e-mail functionality enter account details in lines ~111-112.
 
 
 ------------------
