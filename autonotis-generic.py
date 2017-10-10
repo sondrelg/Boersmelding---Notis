@@ -1,177 +1,146 @@
 import bs4 as bs
-import pickle
 import requests
 import time
 import smtplib
-urllist = []
-tickerlist = []
 
 #Download Tickers Oslo Bors
-def bors():
+def ticker_dl():
     try:
-        resp = requests.get('http://www.netfonds.no/quotes/kurs.php')   ## ACTIVATE THIS FOR OSLO BĂRS                         ## 1
+        resp = requests.get('http://www.netfonds.no/quotes/kurs.php')  
         soup = bs.BeautifulSoup(resp.text, 'lxml')
         table = soup.find('table', {'class':'mbox'})
-        tickers = []
+        ose_tickers = []
         for row in table.findAll('tr')[1:]:
             ticker = row.findAll('td')[1].text
-            tickers.append(ticker)             
-        with open("ose.pickle","wb") as f:
-            pickle.dump(tickers,f)
+            ose_tickers.append(ticker)             
     except:
         pass
-
-#Download Tickers Oslo Axess
-def axess():
     try:
         resp = requests.get('http://www.netfonds.no/quotes/kurs.php?exchange=OAX')            
         soup = bs.BeautifulSoup(resp.text, 'lxml')
         table = soup.find('table', {'class':'mbox'})
-        tickers = []
+        oax_tickers = []
         for row in table.findAll('tr')[1:]:
             ticker = row.findAll('td')[1].text
-            tickers.append(ticker)        
-        with open("axess.pickle","wb") as f:
-            pickle.dump(tickers,f)
+            oax_tickers.append(ticker)        
     except:
         pass
+    return(ose_tickers,oax_tickers)
 
 #Generate URL's for relevant tickers
 def URL_finder_OSE(ticker):
-    url1 = "http://www.netfonds.no/quotes/releases.php?paper="
-    url2 = "&days=&location=paper&exchange=OSE"
-    url_combined = url1+ticker+url2
-    urllist.append(url_combined)
+    urllist = []
+    pre = "http://www.netfonds.no/quotes/releases.php?paper="
+    post = "&days=&location=paper&exchange=OSE"
+    combined = pre+ticker+post
+    urllist.append(combined)
+    return urllist
+    
 def URL_finder_OAX(ticker):
-    url1 = "http://www.netfonds.no/quotes/releases.php?paper="
-    url2 = "&days=&location=paper&exchange=OSE"
-    url_combined = url1+ticker+url2
+    urllist = []
+    pre = "http://www.netfonds.no/quotes/releases.php?paper="
+    post = "&days=&location=paper&exchange=OSE"
+    url_combined = pre+ticker+post
     urllist.append(url_combined)
+    return urllist
 
 #Set up watchlist
-def choose_tickers():
-    print("What ticker would you like to monitor?".encode('utf-8'))
-    df_OSE = pickle.load(open("ose.pickle","rb"))
-    df_Axess = pickle.load(open("axess.pickle","rb"))
-    y = 2
-    while y == 2:
-        ticker_add = input("Ticker: ")
-        ticker_add = ticker_add.upper()
+def choose_tickers(df_OSE,df_axess):
+    urls = []
+    tickers = []
+    print("\nWhat ticker would you like to monitor?")
+    while True:
+        ticker_add = input("\nTicker: ").upper()
+        #START SEQUENCE
         if ticker_add == "START":
-            break
-        print("Please specify 'OAX' or 'OSE' for whether the security is traded on Oslo Axcess or Oslo Bors.".encode('utf-8'))
-        ticker_exch = input("Exchange: ".encode('utf-8'))
-        ticker_exch = ticker_exch.upper()
-        if ticker_exch == "OSE":
-            for i in df_OSE:
-                if i == ticker_add:
-                    tickerlist.append(i)
-                    URL_finder_OSE(i)
-        else:
-            if ticker_exch == "OAX":
-                for i in df_Axess:
-                    if i == ticker_add:
-                        tickerlist.append(i)
-                        URL_finder_OAX(i)
+            if len(urls)>=1:
+                return urls,tickers
             else:
-                print("Input not recognized. Please try again.".encode('utf-8'))
-        print("Your current selection of tickers consists of{}If you wish to enter more tickers, please do so; otherwise type 'start'".format(tickerlist).encode('utf-8'))
+                print('\nNo tickers selected.')
+                exit()                
+        #EXCHANGE SELECTION
+        print("\nPlease specify 'OAX' or 'OSE' for whether the security is traded on Oslo Axcess or Oslo Bors.")
+        ticker_exch = input("\nExchange: ").upper()
+        if ticker_exch == "OSE":
+            if ticker_add in df_OSE and ticker_add not in tickers:
+                urls.append(URL_finder_OSE(ticker_add))       
+                tickers.append(ticker_add)
+                print("\n\nCurrent selection {}\n".format(tickers))
+                print("If you wish to enter more tickers, please do so. To start, type 'start'.")       
+            elif ticker_add not in df_OSE:
+                print('\nTicker not in Oslo Bors. Try again.')
+            else:
+                print('\nDuplicate entry.')
+        elif ticker_exch == "OAX":
+            if ticker_add in df_axess and ticker_add not in tickers:
+                urls.append(URL_finder_OAX(ticker_add))
+                tickers.append(ticker_add)
+                print("\n\nCurrent selection {}\n".format(tickers))
+                print("If you wish to enter more tickers, please do so. Otherwise, type 'start'.")       
+            elif ticker_add not in df_axess:
+                print('\nTicker not in Oslo Axess. Try again.')
+            else:
+                print('\nDuplicate entry.')
+        else:
+            print("\nInput not recognized. Please try again.")
+    return(urls, tickers)
 
 #Save news to long-cycle variable
-def nyhet_lang():
-    yx = []
-    for varname in urllist:
-        resp = requests.get(varname)
+def news_dl(urls):
+    newslist = []
+    for url in urls:
+        resp = requests.get(url[0])
         soup = bs.BeautifulSoup(resp.text, 'lxml')
         table = soup.find('table', {'class': 'qbox releases'})
-        y = table.findAll('tr')[1].text
-        
-        yx.append(y)
-        with open("nyhet.pickle","wb") as f:
-            pickle.dump(yx,f)
+        news = table.findAll('tr')[1].text
+        newslist.append(news)
+    return(newslist)
 
-#Save news to Short- cyclevariable
-def nyhet_kort():
-    yz = []
-    for varname in urllist:
-        resp = requests.get(varname)
-        soup = bs.BeautifulSoup(resp.text, 'lxml')
-        table = soup.find('table', {'class': 'qbox releases'})
-        z = table.findAll('tr')[1].text
-        
-        yz.append(z)
-        with open("nyhet2.pickle","wb") as f:
-            pickle.dump(yz,f)
+#Email package crashes if non-UTF8 characters are included.
+def clean_msg(msg):
+    charlist = [['é','e'],['í','i'],['û','u'],['ü','u'],['ö','oe'],['ë','e'],['í','i'],['é','e'],['á','a'],['ú','u'],['ï','i'],['ø','oe'],['æ','ae'],['å','aa']]
+    for i in charlist:
+        msg=msg.replace(i[0],i[1])
+    return msg
 
-def email(ticker):
-    #Load News
-    df = pickle.load(open("nyhet2.pickle","rb"))
-    #Transform to string
-    msg = df[ticker]
-    #Transform to list
-    msg = list(msg)
-    msg2 = "Nyheter fra oslobors!"
-    #Remove Norwegian letters from text, and recombine to string
-    charlist = ['é','í','û','ü','ö','ë','í','é','á','ú','ï']
-    for i in msg: 
-        if i == "ø":
-            i = "o"
-            msg2 += i
-        else:
-            if i == "æ":
-                i = "ae"
-                msg2 += i
-            else:
-                if i == "å":
-                    i = "aa"
-                    msg2 += i
-                else:
-                    for x in charlist:
-                        if x == i:
-                            i = ""
-                    msg2 += i  
+#FIX INTO DOUBLE-ENTRIED DICT 
+def email(msg):
+    msg = "Nyheter fra Oslo Bors!\n"+clean_msg(msg)
     server = smtplib.SMTP('smtp.gmail.com', 587)
     server.starttls()
     server.login("YOUR EMAIL ADDRESS HERE", "EMAIL PASSWORD")
-    server.sendmail("YOUR EMAIL ADDRESS HERE", "RECEIVING EMAIL ADDRESS HERE", msg2)
-    print("MAIL SENT")
+    server.sendmail("YOUR EMAIL ADDRESS HERE", "RECEIVING EMAIL ADDRESS HERE", msg)
+    print("""-----------------------  MAIL SENT:  --------------------------\n
+    {}
+    ---------------------------------------------------------------""".format(msg))
     server.quit()
 
 def main():
     tid = time.time()
-    #Download Tickers from OSE (Exchange)  
-    bors()
-    #Download Tickers from OAX (Exchange)
-    axess()
-    #Get tickerlist
-    choose_tickers()
-    #Store current news in pickle
-    nyhet_lang()
-    #Retrieve current news
-    df_init = pickle.load(open("nyhet.pickle","rb"))
-    #Print current news
-    print("CURRENT NEWS: ")
-    for i in df_init:
-        print("Watchlist: {}".format(i).encode('utf-8'))
-    print(tickerlist)
-    #Monitoring for new news
+    ose_tickers=[]
+    oax_tickers=[]
+    watchlist=[]
+    #First we create a local list of viable tickers
+    ose_tickers, oax_tickers = ticker_dl()
+    #Secondly, we prompt for tickers to monitor - tickers need to exist in the
+    #list of viable choices
+    urls, watchlist = choose_tickers(ose_tickers,oax_tickers)    
+    #Once the watchlist has been defined, we start by logging the 
+    #most recent news event for each security, which we will use as a benchmark.
+    print("\n\nCURRENT NEWS: \n")
+    df1 = news_dl(urls)    
+    for i in df1:
+        print(clean_msg(i))
+        time.sleep(1.5)
+    print("Watchlist: {}\n".format(watchlist))
+    #Monitor for new news
     while True:
-        nyhet_kort()
-        df1 = pickle.load(open("nyhet.pickle","rb"))        
-        shortlist = []
-        shortcounter = 0
-        for i in df1:
-            shortlist.append(i)
-            shortcounter+=1
-        df2 = pickle.load(open("nyhet2.pickle","rb"))    
-        longlist = []
-        for i in df2:
-            longlist.append(i)
+        df2 = news_dl(urls)
         if df1 != df2:
-            for i in range(0,shortcounter):
-                if shortlist[i] != longlist[i]:
+            for i in range(0,len(df1)):
+                if df1[i] != df2[i]:
                     email(i)
-            nyhet_lang()
+            df1 = df2
             time.sleep(60)
         else:
             print("Runtime: {} minute(s)".format(round((time.time()-tid)/60)))
@@ -179,3 +148,19 @@ def main():
             
 if __name__ == '__main__':
     main()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
