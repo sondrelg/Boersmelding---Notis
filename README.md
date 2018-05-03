@@ -8,8 +8,8 @@ Lets you monitor a selection of Norwegian stocks for news. News events are email
 
 ### Before running
 Before running, any user will need to:
-- Enter e-mail account details in lines 61-62 for e-mail functionality.
-- Hard code stock tickers in line 73. 
+- Input account details in lines 61-62 for e-mail functionality. For example: <email> = "example@gmail.com", <password> = "mypassword".
+- Input stock tickers in line 73.  For example: "['STL','TEL','AXA','NAS']
 
 ### Notes
 While the script is configured to monitor the hard-coded Norwegian stocks defined in the script, some simple optionalities have been added for ease of use:
