@@ -70,7 +70,7 @@ class News_scrape():
             try: interval = int(argv[argv.index('-t')+1])
             except: print('\n>> Time input not recognized. Please pass an integer.'); exit()
         if '-c' in argv: self.tickers = self.choose_tickers()
-        else:  self.tickers = ['DAT','PCIB','STRONG','NANO','HUNT','TRVX','PHO','ELE']
+        else:  self.tickers = [<hard coded tickers>]
         for index, entry in enumerate(self.tickers):
             self.ticker_dict[self.tickers[index]] = self.url.replace('Ticker',self.tickers[index])
         print('\n\nMonitoring {} tickers for news; scanning for potential changes once every {} seconds.\n'.format(len(self.tickers),interval))
