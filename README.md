@@ -1,17 +1,22 @@
-# Boersmelding---Notis
+# Boersmelding - Notis
 Lets you monitor a selection of Norwegian stocks for news. News events are emailed to the user.
 
-Requirements:
-- bs4 (BeautifulSoup)
+Required modules:
+- bs4
 - smtplib
+- datetime
 
-Oslo Bors provides this exact service by SMS (https://www.oslobors.no/Oslo-Boers/Produkter-og-tjenester/SMS-tjenester/Varslinger-paa-SMS), but if you prefer not to pay for the service, here is a simple way to get more or less the same functionality.
+Oslo Bors provides this exact service by SMS (https://www.oslobors.no/Oslo-Boers/Produkter-og-tjenester/SMS-tjenester/Varslinger-paa-SMS).
 
-For e-mail functionality enter account details in lines ~111-112.
-
+Before running, any user will need to:
+- Enter e-mail account details in lines 61-62 for e-mail functionality.
+- Hard code stock tickers in line 73. 
 
 ------------------
 
-This script is configured to prompt you for stocks you're interested in monitoring, but hard-coding your watchlist is simple. I run this on my raspberry pi, and find that hard-coding the watchlist is more convenient.
+While the script is configured to monitor the hard-coded Norwegian stocks defined in the script, some simple optionalities have been added for ease of use:
 
-The script refreshes every 60 seconds to check for news. The frequency can be changed at the very end of the script.
+- To manually enter tickers for monitoring, pass "-c" when running.
+- To alter the frequency news are checked (default: 30 sec), pass "-t <seconds>".
+
+Example: "python Notis.py -c -t 120"
